@@ -31,7 +31,7 @@ end
 
 %% Free stream vilecity
 V_inf = 100;
-alpha = 0;
+alpha = 12; % Angle of attack in degrees
 alpha_rad = deg2rad(alpha);
 
 %% Calculate free stream velocity for each panel
