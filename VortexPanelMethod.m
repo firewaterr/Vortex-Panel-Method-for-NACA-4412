@@ -1,13 +1,14 @@
 % VortexPanelMethod.m
 % This script uses the Vortex Panel Method to calculate the pressure coefficient of NACA 4412 airfoil
 clear all;
+tic;
 
 %% Load airfoil coordinates
 run('AirfoilNACA4412.m');
 
 %% Combine coordinates of the upper and lower surfaces
-x_airfoil = [xu(1:end-1),flip(xl(1:end))]'; % Combine upper and lower surfaces
-y_airfoil = [yu(1:end-1),flip(yl(1:end))]';
+x_airfoil = [xu(1:end),flip(xl(1:end))]'; % Combine upper and lower surfaces
+y_airfoil = [yu(1:end),flip(yl(1:end))]';
 
 %% Panel method setup
 N = length(x_airfoil)-1; % Number of panels
@@ -27,31 +28,38 @@ A = J .* (panels(:,3))'; % Coefficient matrix for the system of equations
 A(isnan(A)) = 0;
 
 %% Free stream velocity
-V_inf = 10;
-alpha = 9; % Angle of attack in degrees
-alpha_rad = deg2rad(alpha);
+V_inf = 100;
+alpha = [0,9];
 
-b = V_inf .* cos(pi/2 - (panels(:,4) - alpha_rad)) .* (2 * pi); % Free stream velocity vector
-
-b(round(N/2),:) = 0; % Last panel velocity is zero
-A(round(N/2),:) = zeros(1,N);
-A(round(N/2),round(N/2):round(N/2)+1) = [1,1];
-
-gamma = A \ b; % Solve for circulation strengths
-
-Gamma = zeros(N,1);
-Gamma(1:end-1) = (gamma(1:end-1)+gamma(2:end))./2;
-Gamma(end) = (gamma(end)+gamma(1))/2;
-%% Calculate velocity diistribution
-V = -1 .* Gamma;
-
-%% Calculate pressure coefficient
-Cp = 1 - (V/V_inf).^2;
-
-%% Plot results
-figure;
-plot(x_con, -Cp, 'o-');
-xlabel('x/c');
-ylabel('Cp');
-title('Pressure coefficient distribution');
-grid on;
+%% Plot y limit
+ylimit = [1,3];
+for i = 1:2
+    alpha_rad = deg2rad(alpha(i)); % Angle of attack in degrees
+    
+    b = V_inf .* cos(pi/2 - (panels(:,4) - alpha_rad)) .* (2 * pi); % Free stream velocity vector
+    
+    b(round(N/2),:) = 0; % Last panel velocity is zero
+    A(round(N/2),:) = zeros(1,N);
+    A(round(N/2),round(N/2):round(N/2)+1) = [1,1];
+    
+    gamma = A \ b; % Solve for circulation strengths
+    
+    Gamma = zeros(N,1);
+    Gamma(1:end-1) = (gamma(1:end-1)+gamma(2:end))./2;
+    Gamma(end) = (gamma(end)+gamma(1))/2;
+    %% Calculate velocity distribution
+    V = -1 .* Gamma;
+    
+    %% Calculate pressure coefficient
+    Cp = 1 - (V/V_inf).^2;
+    
+    %% Plot results
+    figure;
+    plot(x_con, -Cp, 'o-','LineWidth',1.5);
+    xlabel('x/c');
+    ylabel('-Cp');
+    ylim([-1,ylimit(i)]);
+    title(['Pressure coefficient distribution, \alpha = ', num2str(alpha(i)), '°']);
+    grid on;
+end
+toc;
