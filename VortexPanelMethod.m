@@ -28,7 +28,7 @@ A(isnan(A)) = 0;
 
 %% Free stream velocity
 V_inf = 10;
-alpha = 0; % Angle of attack in degrees
+alpha = 9; % Angle of attack in degrees
 alpha_rad = deg2rad(alpha);
 
 b = V_inf .* cos(pi/2 - (panels(:,4) - alpha_rad)) .* (2 * pi); % Free stream velocity vector
